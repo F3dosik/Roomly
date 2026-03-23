@@ -17,10 +17,11 @@ CREATE TABLE rooms (
 );
 
 CREATE TABLE schedules (
-    room_id UUID PRIMARY KEY REFERENCES rooms(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    room_id UUID UNIQUE NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
     weekdays INTEGER[] NOT NULL CHECK (
         array_length(weekdays, 1) > 0 AND
-        weekdays <@ ARRAY[0,1,2,3,4,5,6]
+        weekdays <@ ARRAY[1,2,3,4,5,6,7]
     ),
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
@@ -39,7 +40,7 @@ CREATE TABLE slots (
 CREATE TABLE bookings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(id),
-    slot_id UUID NOT NULL REFERENCES slots(id),
+    slot_id UUID NOT NULL REFERENCES slots(id) ON DELETE CASCADE,
     status booking_status NOT NULL DEFAULT 'active',
     conference_link TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
