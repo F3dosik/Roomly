@@ -57,8 +57,3 @@ services:
 
 volumes:
   pgdata:
-
-networks:
-  default:
-    external: true
-    name: test-backend-1-f3dosik_default
