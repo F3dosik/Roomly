@@ -4,6 +4,9 @@ up:
 down:
 	docker compose down
 
+down-clean:
+	docker compose down -v
+
 migrate-down:
 	docker compose --profile tools run --rm migrate-down
 

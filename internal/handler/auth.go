@@ -53,7 +53,7 @@ func (h *Handler) dummyLogin(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(token); err != nil {
+	if err := json.NewEncoder(w).Encode(Token{Token: token}); err != nil {
 		h.logger.Errorw("dummyLogin: encode error", "error", err)
 		return
 	}
@@ -106,6 +106,53 @@ func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewEncoder(w).Encode(toUserResponse(user)); err != nil {
 		h.logger.Errorw("dummyLogin: encode error", "error", err)
+		return
+	}
+}
+
+type loginRequestBody struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
+	var req loginRequestBody
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.logger.Debugw("login: can't decode JSON body", "error", err)
+		httputil.HandleError(w, httputil.NewAppError(
+			httputil.ErrCodeInvalidRequest,
+			"invalid request body",
+			http.StatusBadRequest,
+		))
+		return
+	}
+
+	token, err := h.userService.Login(r.Context(), req.Email, req.Password)
+	if err != nil {
+		switch {
+		case errors.Is(err, service.ErrInvalidCredentials):
+			h.logger.Debugw("login: Invalid credentials", "error", err)
+			httputil.HandleError(w, httputil.NewAppError(
+				httputil.ErrCodeInvalidRequest,
+				err.Error(),
+				http.StatusUnauthorized,
+			))
+		default:
+			h.logger.Debugw("login: internal error", "error", err)
+			httputil.HandleError(w, httputil.NewAppError(
+				httputil.ErrCodeInternalError,
+				http.StatusText(http.StatusInternalServerError),
+				http.StatusInternalServerError,
+			))
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+	if err := json.NewEncoder(w).Encode(Token{Token: token}); err != nil {
+		h.logger.Errorw("login: encode error", "error", err)
 		return
 	}
 }

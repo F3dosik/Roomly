@@ -6,7 +6,7 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/18/docker
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U roomly"]
       interval: 5s
@@ -57,3 +57,8 @@ services:
 
 volumes:
   pgdata:
+
+networks:
+  default:
+    external: true
+    name: test-backend-1-f3dosik_default

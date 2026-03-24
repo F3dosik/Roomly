@@ -33,3 +33,21 @@ func (r *postgresRepository) CreateUser(
 
 	return &user, nil
 }
+
+func (r *postgresRepository) GetUser(ctx context.Context, email string) (*domain.User, error) {
+	var user domain.User
+	err := db.WithRetry(ctx, func() error {
+		return r.pool.QueryRow(ctx, `
+			SELECT id, password_hash, role, created_at FROM users
+			WHERE email = $1
+		`, email).Scan(&user.ID, &user.PasswordHash, &user.Role, &user.CreatedAt)
+	})
+	if err != nil {
+		if db.IsNoRows(err) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("get user by email: %w", err)
+	}
+
+	return &user, nil
+}

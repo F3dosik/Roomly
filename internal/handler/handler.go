@@ -45,6 +45,7 @@ func (h *Handler) setupRoutes() {
 		r.Use(middleware.RequireJSON(h.logger))
 		r.Post("/dummyLogin", h.dummyLogin)
 		r.Post("/register", h.register)
+		r.Post("/login", h.login)
 	})
 
 }

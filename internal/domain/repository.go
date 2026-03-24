@@ -16,4 +16,5 @@ type Repository interface {
 	// GetBookings(ctx context.Context, user_id uuid.UUID) ([]*Booking, error)
 
 	CreateUser(ctx context.Context, email, password string, role Role) (*User, error)
+	GetUser(ctx context.Context, email string) (*User, error)
 }
