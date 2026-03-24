@@ -49,5 +49,7 @@ func (r *postgresRepository) GetUser(ctx context.Context, email string) (*domain
 		return nil, fmt.Errorf("get user by email: %w", err)
 	}
 
+	user.Email = email
+
 	return &user, nil
 }

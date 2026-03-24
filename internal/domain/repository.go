@@ -17,4 +17,8 @@ type Repository interface {
 
 	CreateUser(ctx context.Context, email, password string, role Role) (*User, error)
 	GetUser(ctx context.Context, email string) (*User, error)
+
+	GetRooms(ctx context.Context) ([]*Room, error)
+	CreateRoom(ctx context.Context, room *Room) error
+	CreateSchedule(ctx context.Context, schedule *Schedule) error
 }

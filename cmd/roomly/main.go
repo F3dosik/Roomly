@@ -40,13 +40,13 @@ func main() {
 
 	// сервисы
 	us := service.NewUserService(repo, cfg.JWTSecret)
-	// roomService := service.NewRoomService(repo)
+	rs := service.NewRoomService(repo)
 	// slotService := service.NewSlotService(repo)
 	// bookingService := service.NewBookingService(repo)
 	// authService := service.NewAuthService(repo, cfg.JWTSecret)
 
 	// хендлеры
-	h := handler.New(cfg.JWTSecret, us, logger)
+	h := handler.New(cfg.JWTSecret, us, rs, logger)
 
 	// // планировщик генерации слотов
 	// scheduler := scheduler.New(repo)

@@ -16,3 +16,8 @@ func IsUniqueViolation(err error) bool {
 func IsNoRows(err error) bool {
 	return errors.Is(err, pgx.ErrNoRows)
 }
+
+func IsFKViolation(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == pgerrcode.ForeignKeyViolation
+}

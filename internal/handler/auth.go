@@ -5,18 +5,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/avito-internships/test-backend-1-F3dosik/internal/domain"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/httputil"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/service"
 )
-
-type Token struct {
-	Token string `json:"token"`
-}
-
-type dummyLoginRequestBody struct {
-	Role domain.Role `json:"role"`
-}
 
 func (h *Handler) dummyLogin(w http.ResponseWriter, r *http.Request) {
 	var req dummyLoginRequestBody
@@ -57,12 +48,6 @@ func (h *Handler) dummyLogin(w http.ResponseWriter, r *http.Request) {
 		h.logger.Errorw("dummyLogin: encode error", "error", err)
 		return
 	}
-}
-
-type registerRequestBody struct {
-	Email    string      `json:"email"`
-	Password string      `json:"password"`
-	Role     domain.Role `json:"role"`
 }
 
 func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
@@ -110,11 +95,6 @@ func (h *Handler) register(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type loginRequestBody struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 	var req loginRequestBody
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -133,7 +113,7 @@ func (h *Handler) login(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, service.ErrInvalidCredentials):
 			h.logger.Debugw("login: Invalid credentials", "error", err)
 			httputil.HandleError(w, httputil.NewAppError(
-				httputil.ErrCodeInvalidRequest,
+				httputil.ErrCodeUnauthorized,
 				err.Error(),
 				http.StatusUnauthorized,
 			))

@@ -7,8 +7,18 @@ import (
 )
 
 type Role string
-type Weekday uint8
+type DayOfWeek int
 type BookingStatus string
+
+const (
+	Monday    DayOfWeek = 1
+	Tuesday   DayOfWeek = 2
+	Wednesday DayOfWeek = 3
+	Thursday  DayOfWeek = 4
+	Friday    DayOfWeek = 5
+	Saturday  DayOfWeek = 6
+	Sunday    DayOfWeek = 7
+)
 
 const (
 	RoleAdmin Role = "admin"
@@ -33,15 +43,16 @@ type Room struct {
 	Name        string
 	Description *string
 	Capacity    *int
-	CreatedAt   time.Time
+	CreatedAt   *time.Time
 }
 
 type Schedule struct {
-	RoomID    uuid.UUID
-	Weekdays  []Weekday
-	StartTime time.Time
-	EndTime   time.Time
-	CreatedAt time.Time
+	ID         uuid.UUID
+	RoomID     uuid.UUID
+	DaysOfWeek []DayOfWeek
+	StartTime  time.Time
+	EndTime    time.Time
+	CreatedAt  time.Time
 }
 
 type Slot struct {

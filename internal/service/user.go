@@ -34,31 +34,17 @@ func NewUserService(repo domain.Repository, jwtSecret string) UserService {
 	}
 }
 
-func (s *userService) generateToken(userID uuid.UUID, role domain.Role) (string, error) {
-	var token string
-	var err error
-	switch role {
-	case domain.RoleUser:
-		token, err = jwt.GenerateToken(userID, domain.RoleUser, s.jwtSecret)
-	case domain.RoleAdmin:
-		token, err = jwt.GenerateToken(userID, domain.RoleAdmin, s.jwtSecret)
-	default:
-		return "", ErrInvalidRole
-	}
-	if err != nil {
+func (s *userService) DummyLogin(ctx context.Context, role domain.Role) (string, error) {
+	if err := validateRole(role); err != nil {
 		return "", err
 	}
-	return token, nil
-}
-
-func (s *userService) DummyLogin(ctx context.Context, role domain.Role) (string, error) {
-	var token string
-	var err error
+	var id uuid.UUID
 	if role == domain.RoleAdmin {
-		token, err = s.generateToken(adminUUID, domain.RoleAdmin)
+		id = adminUUID
 	} else {
-		token, err = s.generateToken(userUUID, domain.RoleUser)
+		id = userUUID
 	}
+	token, err := jwt.GenerateToken(id, role, s.jwtSecret)
 	if err != nil {
 		return "", err
 	}
@@ -95,14 +81,6 @@ func (s *userService) Register(ctx context.Context, email, password string, role
 }
 
 func (s *userService) Login(ctx context.Context, email, password string) (string, error) {
-	if err := validateEmail(email); err != nil {
-		return "", err
-	}
-
-	if err := validatePassword(password); err != nil {
-		return "", err
-	}
-
 	user, err := s.repository.GetUser(ctx, email)
 	if err != nil {
 		if errors.Is(err, postgres.ErrUserNotFound) {
@@ -115,7 +93,7 @@ func (s *userService) Login(ctx context.Context, email, password string) (string
 		return "", ErrInvalidCredentials
 	}
 
-	token, err := s.generateToken(user.ID, user.Role)
+	token, err := jwt.GenerateToken(user.ID, user.Role, s.jwtSecret)
 	if err != nil {
 		return "", err
 	}
