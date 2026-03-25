@@ -1,4 +1,4 @@
-.PHONY: up down down-clean migrate-down seed test
+.PHONY: up down down-clean migrate-down seed test test-e2e
 up:
 	docker compose up --build -d
 

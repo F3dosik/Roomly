@@ -53,7 +53,7 @@ services:
       - .env
     volumes:
       - ./scripts/seed.sql:/seed.sql
-    command: psql ${DATABASE_URL} -f /seed.sql
+    command: sh -c "psql $$DATABASE_URL -f /seed.sql"
     depends_on:
       db:
         condition: service_healthy
