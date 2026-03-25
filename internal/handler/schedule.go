@@ -5,15 +5,24 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/avito-internships/test-backend-1-F3dosik/internal/ctxkey"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/domain"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/httputil"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/service"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
-func (h *Handler) сreateSchedule(w http.ResponseWriter, r *http.Request) {
-	roomID := r.Context().Value(ctxkey.RoomIDKey).(uuid.UUID)
+func (h *Handler) createSchedule(w http.ResponseWriter, r *http.Request) {
+	roomIDStr := chi.URLParam(r, "roomId")
+	roomID, err := uuid.Parse(roomIDStr)
+	if err != nil {
+		httputil.HandleError(w, httputil.NewAppError(
+			httputil.ErrCodeInvalidRequest,
+			"invalid roomId",
+			http.StatusBadRequest,
+		))
+		return
+	}
 
 	var req scheduleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -70,7 +79,7 @@ func (h *Handler) сreateSchedule(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := toScheduleResponse(schedule)
+	resp := toGetScheduleResponse(schedule)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)

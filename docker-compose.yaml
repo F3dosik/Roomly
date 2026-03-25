@@ -39,11 +39,24 @@ services:
       command: [
         "-path", "/migrations",
         "-database", "${DATABASE_URL}",
-        "down"
+        "down", "1"
       ]
       depends_on:
         db:
           condition: service_healthy
+
+  seed:
+    image: postgres:18-alpine
+    profiles:
+      - tools
+    env_file:
+      - .env
+    volumes:
+      - ./scripts/seed.sql:/seed.sql
+    command: psql ${DATABASE_URL} -f /seed.sql
+    depends_on:
+      db:
+        condition: service_healthy
 
   roomly:
     build: .

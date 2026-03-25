@@ -12,13 +12,7 @@ import (
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/service"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 )
-
-func newTestHandler(us service.UserService, rs service.RoomService) *Handler {
-	logger := zap.NewNop().Sugar()
-	return New("test-secret", us, rs, logger)
-}
 
 func TestHandler_DummyLogin(t *testing.T) {
 	tests := []struct {
@@ -58,7 +52,7 @@ func TestHandler_DummyLogin(t *testing.T) {
 				DummyLoginFn: tt.mockFn,
 			}
 
-			h := newTestHandler(mock, nil)
+			h := newTestHandler(mock, nil, nil, nil)
 
 			req := httptest.NewRequest(http.MethodPost, "/dummyLogin", strings.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")
@@ -118,7 +112,7 @@ func TestHandler_Register(t *testing.T) {
 				RegisterFn: tt.mockFn,
 			}
 
-			h := newTestHandler(mock, nil)
+			h := newTestHandler(mock, nil, nil, nil)
 
 			req := httptest.NewRequest(http.MethodPost, "/register", strings.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")
@@ -172,7 +166,7 @@ func TestHandler_Login(t *testing.T) {
 				LoginFn: tt.mockFn,
 			}
 
-			h := newTestHandler(mock, nil)
+			h := newTestHandler(mock, nil, nil, nil)
 
 			req := httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")

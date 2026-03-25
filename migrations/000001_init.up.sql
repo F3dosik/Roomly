@@ -33,7 +33,7 @@ CREATE TABLE slots (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     room_id UUID NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
     starts_at TIMESTAMPTZ NOT NULL, 
-    ends_at TIMESTAMPTZ NOT NULL
+    ends_at TIMESTAMPTZ NOT NULL,
     CHECK (starts_at < ends_at)
 );
 
@@ -47,7 +47,8 @@ CREATE TABLE bookings (
     cancelled_at TIMESTAMPTZ
 );
 
-CREATE INDEX idx_slots_room_date ON slots(room_id, starts_at);
 CREATE INDEX idx_bookings_user ON bookings(user_id);
+CREATE INDEX idx_bookings_slot_status ON bookings(slot_id, status);
 CREATE UNIQUE INDEX idx_one_active_booking_per_slot 
     ON bookings(slot_id) WHERE status = 'active';
+CREATE UNIQUE INDEX idx_slots_room_starts ON slots(room_id, starts_at);

@@ -40,3 +40,33 @@ func CheckRoomID(logger *zap.SugaredLogger) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+func CheckBookingID(logger *zap.SugaredLogger) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			idStr := chi.URLParam(r, "bookingId")
+			if idStr == "" {
+				logger.Debug("check bookingId: bookingId is empty")
+				httputil.HandleError(w, httputil.NewAppError(
+					httputil.ErrCodeInvalidRequest,
+					"bookingId is empty",
+					http.StatusBadRequest,
+				))
+				return
+			}
+			id, err := uuid.Parse(idStr)
+			if err != nil {
+				logger.Debugw("check bookingId", "error", err)
+				httputil.HandleError(w, httputil.NewAppError(
+					httputil.ErrCodeInvalidRequest,
+					"invalid bookingId",
+					http.StatusBadRequest,
+				))
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), ctxkey.BookingIDKey, id)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		})
+	}
+}

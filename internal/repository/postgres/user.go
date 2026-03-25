@@ -6,7 +6,24 @@ import (
 
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/db"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/domain"
+	"github.com/google/uuid"
 )
+
+func (r *postgresRepository) UpsertUser(ctx context.Context, id uuid.UUID, email string, role domain.Role) error {
+	err := db.WithRetry(ctx, func() error {
+		_, err := r.pool.Exec(ctx, `
+			INSERT INTO users (id, email, password_hash, role)
+			VALUES ($1, $2, '', $3)
+			ON CONFLICT (id) DO NOTHING
+		`, id, email, role)
+		return err
+	})
+
+	if err != nil {
+		return fmt.Errorf("create fixed user: %w", err)
+	}
+	return nil
+}
 
 func (r *postgresRepository) CreateUser(
 	ctx context.Context, email, password string,

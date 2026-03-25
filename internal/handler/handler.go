@@ -12,20 +12,29 @@ import (
 )
 
 type Handler struct {
-	router      chi.Router
-	userService service.UserService
-	roomService service.RoomService
-	jwtSecret   string
-	logger      *zap.SugaredLogger
+	router         chi.Router
+	userService    service.UserService
+	roomService    service.RoomService
+	slotService    service.SlotService
+	bookingService service.BookingService
+	jwtSecret      string
+	logger         *zap.SugaredLogger
 }
 
-func New(secretKey string, us service.UserService, rs service.RoomService, logger *zap.SugaredLogger) *Handler {
+func New(
+	secretKey string,
+	us service.UserService, rs service.RoomService,
+	ss service.SlotService, bs service.BookingService,
+	logger *zap.SugaredLogger,
+) *Handler {
 	h := &Handler{
-		router:      chi.NewRouter(),
-		userService: us,
-		roomService: rs,
-		logger:      logger,
-		jwtSecret:   secretKey,
+		router:         chi.NewRouter(),
+		userService:    us,
+		roomService:    rs,
+		slotService:    ss,
+		bookingService: bs,
+		logger:         logger,
+		jwtSecret:      secretKey,
 	}
 	h.setupMiddleware()
 	h.setupRoutes()
@@ -56,11 +65,26 @@ func (h *Handler) setupRoutes() {
 
 		r.Get("/rooms/list", h.getRooms)
 
+		r.With(middleware.CheckRoomID(h.logger)).
+			Get("/rooms/{roomId}/slots/list", h.getFreeSlots)
+
+		r.With(middleware.RequireRole(domain.RoleAdmin)).
+			Get("/bookings/list", h.listBookings)
+
+		r.With(middleware.RequireRole(domain.RoleUser)).
+			Get("/bookings/my", h.getMyBookings)
+
 		r.With(middleware.RequireJSON(h.logger), middleware.RequireRole(domain.RoleAdmin)).
 			Post("/rooms/create", h.сreateRoom)
 
-		r.With(middleware.RequireJSON(h.logger), middleware.RequireRole(domain.RoleAdmin), middleware.CheckRoomID(h.logger)).
-			Post("/rooms/{roomId}/schedule/create", h.сreateSchedule)
+		r.With(middleware.RequireJSON(h.logger), middleware.RequireRole(domain.RoleAdmin)).
+			Post("/rooms/{roomId}/schedule/create", h.createSchedule)
+
+		r.With(middleware.RequireJSON(h.logger), middleware.RequireRole(domain.RoleUser)).
+			Post("/bookings/create", h.createBooking)
+
+		r.With(middleware.RequireRole(domain.RoleUser)).
+			Post("/bookings/{bookingId}/cancel", h.cancelBooking)
 	})
 }
 

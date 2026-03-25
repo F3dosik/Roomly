@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/domain"
+	"github.com/avito-internships/test-backend-1-F3dosik/internal/scheduler"
 	"github.com/google/uuid"
 )
 
@@ -19,11 +20,12 @@ type RoomService interface {
 }
 
 type roomService struct {
-	repository domain.Repository
+	repository    domain.Repository
+	slotGenerator *scheduler.SlotGenerator
 }
 
-func NewRoomService(repo domain.Repository) RoomService {
-	return &roomService{repository: repo}
+func NewRoomService(repo domain.Repository, sg *scheduler.SlotGenerator) RoomService {
+	return &roomService{repository: repo, slotGenerator: sg}
 }
 
 func (s *roomService) GetRooms(ctx context.Context) ([]*domain.Room, error) {
@@ -65,6 +67,8 @@ func (s *roomService) CreateSchedule(
 	if err := s.repository.CreateSchedule(ctx, &schedule); err != nil {
 		return nil, fmt.Errorf("create schedule: %w", err)
 	}
+
+	s.slotGenerator.Trigger()
 
 	return &schedule, err
 

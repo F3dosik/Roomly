@@ -14,6 +14,9 @@ import (
 var (
 	adminUUID = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	userUUID  = uuid.MustParse("00000000-0000-0000-0000-000000000002")
+
+	adminEmail = "admin@dummy.local"
+	userEmail  = "user@dummy.local"
 )
 
 type UserService interface {
@@ -39,15 +42,23 @@ func (s *userService) DummyLogin(ctx context.Context, role domain.Role) (string,
 		return "", err
 	}
 	var id uuid.UUID
+	var email string
 	if role == domain.RoleAdmin {
 		id = adminUUID
+		email = adminEmail
 	} else {
 		id = userUUID
+		email = userEmail
 	}
 	token, err := jwt.GenerateToken(id, role, s.jwtSecret)
 	if err != nil {
 		return "", err
 	}
+
+	if err := s.repository.UpsertUser(ctx, id, email, role); err != nil {
+		return "", err
+	}
+
 	return token, nil
 }
 

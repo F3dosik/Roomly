@@ -15,5 +15,4 @@ var (
 	ErrInvalidDaysOfWeek  = errors.New("invalid dayOfWeek")
 	ErrInvalidTimeFormat  = errors.New("invalid time format")
 	ErrInvalidTimeRange   = errors.New("startTime must be before endTime")
-	ErrInternal           = errors.New("internal error")
 )

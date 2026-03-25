@@ -44,12 +44,12 @@ func TestHandler_CreateSchedule(t *testing.T) {
 			},
 			expectedStatus: http.StatusCreated,
 			checkBody: func(t *testing.T, body string) {
-				var resp scheduleResponse
+				var resp getScheduleResponse
 				require.NoError(t, json.Unmarshal([]byte(body), &resp))
-				require.Equal(t, scheduleID, resp.ID)
-				require.Equal(t, roomID, resp.RoomID)
-				require.Equal(t, "09:00", resp.StartTime)
-				require.Equal(t, "18:00", resp.EndTime)
+				require.Equal(t, scheduleID, resp.Schedule.ID)
+				require.Equal(t, roomID, resp.Schedule.RoomID)
+				require.Equal(t, "09:00", resp.Schedule.StartTime)
+				require.Equal(t, "18:00", resp.Schedule.EndTime)
 			},
 		},
 		{
@@ -108,7 +108,7 @@ func TestHandler_CreateSchedule(t *testing.T) {
 			body:  `{"daysOfWeek":[1],"startTime":"09:00","endTime":"18:00"}`,
 			token: adminToken,
 			mockFn: func(ctx context.Context, rID uuid.UUID, days []domain.DayOfWeek, start, end string) (*domain.Schedule, error) {
-				return nil, service.ErrInternal
+				return nil, domain.ErrInternal
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -117,7 +117,7 @@ func TestHandler_CreateSchedule(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &roomServiceMock{CreateScheduleFn: tt.mockFn}
-			h := newTestHandler(nil, mock)
+			h := newTestHandler(nil, mock, nil, nil)
 
 			url := "/rooms/" + roomID.String() + "/schedule/create"
 			req := httptest.NewRequest(http.MethodPost, url, strings.NewReader(tt.body))

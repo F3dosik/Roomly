@@ -12,6 +12,7 @@ import (
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/handler"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/logger"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/repository/postgres"
+	"github.com/avito-internships/test-backend-1-F3dosik/internal/scheduler"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/server"
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/service"
 )
@@ -38,19 +39,18 @@ func main() {
 	// репозитории
 	repo := postgres.New(pool)
 
+	// воркер генерации слотов
+	gen := scheduler.New(repo, logger)
+	go gen.Run(ctx)
+
 	// сервисы
 	us := service.NewUserService(repo, cfg.JWTSecret)
-	rs := service.NewRoomService(repo)
-	// slotService := service.NewSlotService(repo)
-	// bookingService := service.NewBookingService(repo)
-	// authService := service.NewAuthService(repo, cfg.JWTSecret)
+	rs := service.NewRoomService(repo, gen)
+	ss := service.NewSlotService(repo)
+	bs := service.NewBookingService(repo)
 
 	// хендлеры
-	h := handler.New(cfg.JWTSecret, us, rs, logger)
-
-	// // планировщик генерации слотов
-	// scheduler := scheduler.New(repo)
-	// go scheduler.Run(ctx)
+	h := handler.New(cfg.JWTSecret, us, rs, ss, bs, logger)
 
 	// сервер
 	srv := server.New(cfg, h, logger)

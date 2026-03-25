@@ -12,7 +12,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/avito-internships/test-backend-1-F3dosik/internal/domain"
-	"github.com/avito-internships/test-backend-1-F3dosik/internal/service"
 )
 
 func TestHandler_GetRooms(t *testing.T) {
@@ -52,7 +51,7 @@ func TestHandler_GetRooms(t *testing.T) {
 		{
 			name: "internal error",
 			mockFn: func(ctx context.Context) ([]*domain.Room, error) {
-				return nil, service.ErrInternal
+				return nil, domain.ErrInternal
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -61,7 +60,7 @@ func TestHandler_GetRooms(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &roomServiceMock{GetRoomsFn: tt.mockFn}
-			h := newTestHandler(nil, mock)
+			h := newTestHandler(nil, mock, nil, nil)
 
 			req := httptest.NewRequest(http.MethodGet, "/rooms/list", nil)
 			req.Header.Set("Authorization", "Bearer "+userToken(t))
@@ -119,7 +118,7 @@ func TestHandler_CreateRoom(t *testing.T) {
 			body:  `{"name":"Room"}`,
 			token: adminToken,
 			mockFn: func(ctx context.Context, room *domain.Room) error {
-				return service.ErrInternal
+				return domain.ErrInternal
 			},
 			expectedStatus: http.StatusInternalServerError,
 		},
@@ -128,7 +127,7 @@ func TestHandler_CreateRoom(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mock := &roomServiceMock{CreateRoomFn: tt.mockFn}
-			h := newTestHandler(nil, mock)
+			h := newTestHandler(nil, mock, nil, nil)
 
 			req := httptest.NewRequest(http.MethodPost, "/rooms/create", strings.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")

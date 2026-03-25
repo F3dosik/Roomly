@@ -21,3 +21,7 @@ func IsFKViolation(err error) bool {
 	var pgErr *pgconn.PgError
 	return errors.As(err, &pgErr) && pgErr.Code == pgerrcode.ForeignKeyViolation
 }
+
+func IsNotFound(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
+}

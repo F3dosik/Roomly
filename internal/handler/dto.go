@@ -66,6 +66,16 @@ func toRoomResponse(room *domain.Room) *roomResponse {
 	}
 }
 
+type getRoomResponse struct {
+	Room *roomResponse `json:"room"`
+}
+
+func toGetRoomResponse(room *domain.Room) *getRoomResponse {
+	return &getRoomResponse{
+		Room: toRoomResponse(room),
+	}
+}
+
 type getRoomsResponse struct {
 	Rooms []*roomResponse `json:"rooms"`
 }
@@ -110,6 +120,14 @@ func toScheduleResponse(s *domain.Schedule) *scheduleResponse {
 	}
 }
 
+type getScheduleResponse struct {
+	Schedule *scheduleResponse `json:"schedule"`
+}
+
+func toGetScheduleResponse(schedule *domain.Schedule) *getScheduleResponse {
+	return &getScheduleResponse{Schedule: toScheduleResponse(schedule)}
+}
+
 type slotResponse struct {
 	ID     uuid.UUID `json:"id"`
 	RoomID uuid.UUID `json:"roomId"`
@@ -117,17 +135,91 @@ type slotResponse struct {
 	End    time.Time `json:"end"`
 }
 
+func toSlotResponse(slot *domain.Slot) *slotResponse {
+	return &slotResponse{
+		ID:     slot.ID,
+		RoomID: slot.RoomID,
+		Start:  slot.StartsAt,
+		End:    slot.EndsAt,
+	}
+}
+
+type getSlotResponse struct {
+	Slots []*slotResponse `json:"slots"`
+}
+
+func toGetSlotResponse(slots []*domain.Slot) *getSlotResponse {
+	resp := getSlotResponse{Slots: make([]*slotResponse, 0, len(slots))}
+	for _, slot := range slots {
+		resp.Slots = append(resp.Slots, toSlotResponse(slot))
+	}
+	return &resp
+}
+
+type createBookingRequest struct {
+	SlotID               uuid.UUID `json:"slotId"`
+	CreateConferenceLink bool      `json:"createConferenceLink"`
+}
+
 type bookingResponse struct {
-	ID             uuid.UUID  `json:"id"`
-	SlotID         uuid.UUID  `json:"slotId"`
-	UserID         uuid.UUID  `json:"userId"`
-	Status         string     `json:"status"`
-	ConferenceLink *string    `json:"confernceLink"`
-	CreatedAt      *time.Time `json:"createdAt"`
+	ID             uuid.UUID            `json:"id"`
+	SlotID         uuid.UUID            `json:"slotId"`
+	UserID         uuid.UUID            `json:"userId"`
+	Status         domain.BookingStatus `json:"status"`
+	ConferenceLink *string              `json:"conferenceLink"`
+	CreatedAt      *time.Time           `json:"createdAt"`
+}
+
+func toBookingResponse(b *domain.Booking) *bookingResponse {
+	return &bookingResponse{
+		ID:             b.ID,
+		SlotID:         b.SlotID,
+		UserID:         b.UserID,
+		Status:         b.Status,
+		ConferenceLink: b.ConferenceLink,
+		CreatedAt:      &b.CreatedAt,
+	}
+}
+
+type bookingWrapResponse struct {
+	Booking *bookingResponse `json:"booking"`
+}
+
+type listBookingsResponse struct {
+	Bookings   []*bookingResponse `json:"bookings"`
+	Pagination paginationResponse `json:"pagination"`
+}
+
+func toListBookingsResponse(bookings []*domain.Booking, page, pageSize, total int) *listBookingsResponse {
+	resp := &listBookingsResponse{
+		Bookings: make([]*bookingResponse, 0, len(bookings)),
+		Pagination: paginationResponse{
+			Page:     page,
+			PageSize: pageSize,
+			Total:    total,
+		},
+	}
+
+	for _, b := range bookings {
+		resp.Bookings = append(resp.Bookings, toBookingResponse(b))
+	}
+	return resp
 }
 
 type paginationResponse struct {
 	Page     int `json:"page"`
 	PageSize int `json:"pageSize"`
 	Total    int `json:"total"`
+}
+
+type myBookingsResponse struct {
+	Bookings []*bookingResponse `json:"bookings"`
+}
+
+func toMyBookingResponse(bookings []*domain.Booking) *myBookingsResponse {
+	resp := myBookingsResponse{Bookings: make([]*bookingResponse, 0, len(bookings))}
+	for _, b := range bookings {
+		resp.Bookings = append(resp.Bookings, toBookingResponse(b))
+	}
+	return &resp
 }

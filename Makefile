@@ -1,3 +1,4 @@
+.PHONY: up down down-clean migrate-down seed test
 up:
 	docker compose up --build -d
 
@@ -11,7 +12,10 @@ migrate-down:
 	docker compose --profile tools run --rm migrate-down
 
 seed:
-	docker compose exec roomly ./roomly seed
+	docker compose --profile tools run --rm seed
 
 test:
 	go test ./...
+
+test-e2e:
+	go test -v -tags=e2e ./tests/e2e/...
