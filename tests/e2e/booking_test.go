@@ -13,7 +13,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const baseURL = "http://localhost:8080"
+const baseURL = "http://roomly:8080"
 
 type tokenResponse struct {
 	Token string `json:"token"`

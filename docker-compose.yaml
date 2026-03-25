@@ -68,5 +68,21 @@ services:
       migrate:
         condition: service_completed_successfully
 
+  tests:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: go test ./...
+
+  tests-e2e:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    command: go test -v -tags=e2e ./tests/e2e/...
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 volumes:
   pgdata:

@@ -15,7 +15,7 @@ seed:
 	docker compose --profile tools run --rm seed
 
 test:
-	go test ./...
+	docker compose run --rm tests
 
 test-e2e:
-	go test -v -tags=e2e ./tests/e2e/...
+	docker compose run --rm tests-e2e 
